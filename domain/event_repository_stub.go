@@ -1,10 +1,12 @@
 package domain
 
+import "main/errs"
+
 type EventRepositoryStub struct {
 	events []Event
 }
 
-func (er EventRepositoryStub) GetAllEvents() ([]Event, error) {
+func (er EventRepositoryStub) GetAllEvents() ([]Event, *errs.AppError) {
 	return er.events, nil
 }
 

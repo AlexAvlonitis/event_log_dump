@@ -26,9 +26,9 @@ func (eh *EventHandlers) createEvent(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, err.Error())
 	} else {
-		event, error := eh.EventService.CreateEvent(request)
-		if error != nil {
-			writeResponse(w, 403, error)
+		event, AppError := eh.EventService.CreateEvent(request)
+		if AppError != nil {
+			writeResponse(w, AppError.Code, AppError.Message)
 		} else {
 			writeResponse(w, http.StatusCreated, event)
 		}

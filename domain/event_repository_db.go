@@ -2,8 +2,8 @@ package domain
 
 import (
 	"database/sql"
-	"errors"
 	"log"
+	"main/errs"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -12,13 +12,14 @@ type EventRepositoryDb struct {
 	client *sql.DB
 }
 
-func (er EventRepositoryDb) GetAllEvents() ([]Event, error) {
+// Return all Events from the database
+func (er EventRepositoryDb) GetAllEvents() ([]Event, *errs.AppError) {
 	findAllSql := "select * from events"
 
 	rows, err := er.client.Query(findAllSql)
 	if err != nil {
 		log.Fatal("Error while querying events table" + err.Error())
-		return nil, err
+		return nil, errs.NewUnexpectedError("Unexpected error from database")
 	}
 
 	events := make([]Event, 0)
@@ -27,7 +28,7 @@ func (er EventRepositoryDb) GetAllEvents() ([]Event, error) {
 		err := rows.Scan(&e.ID, &e.EventType, &e.CreatedAt, &e.Metadata)
 		if err != nil {
 			log.Fatal("Error while scanning events" + err.Error())
-			return nil, err
+			return nil, errs.NewUnexpectedError("Unexpected error from database")
 		}
 		events = append(events, e)
 	}
@@ -35,19 +36,20 @@ func (er EventRepositoryDb) GetAllEvents() ([]Event, error) {
 	return events, nil
 }
 
-func (er EventRepositoryDb) CreateEvent(e Event) (*Event, error) {
+// Create a new Event to the database
+func (er EventRepositoryDb) CreateEvent(e Event) (*Event, *errs.AppError) {
 	sqlInsert := "INSERT INTO events (event_type, created_at, metadata) values (?, ?, ?)"
 
 	result, err := er.client.Exec(sqlInsert, e.EventType, e.CreatedAt, e.Metadata)
 	if err != nil {
 		log.Fatal("Error while creating new event: " + err.Error())
-		return nil, errors.New("Unexpected error from database")
+		return nil, errs.NewUnexpectedError("Unexpected error from database")
 	}
 
 	id, err := result.LastInsertId()
 	if err != nil {
 		log.Fatal("Error while creating new event: " + err.Error())
-		return nil, errors.New("Unexpected error from database")
+		return nil, errs.NewUnexpectedError("Unexpected error from database")
 	}
 	e.ID = id
 	return &e, nil

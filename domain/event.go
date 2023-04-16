@@ -2,6 +2,7 @@ package domain
 
 import (
 	"main/dto"
+	"main/errs"
 )
 
 type Event struct {
@@ -12,8 +13,8 @@ type Event struct {
 }
 
 type EventRepository interface {
-	GetAllEvents() ([]Event, error)
-	CreateEvent(Event) (*Event, error)
+	GetAllEvents() ([]Event, *errs.AppError)
+	CreateEvent(Event) (*Event, *errs.AppError)
 }
 
 func (e Event) ToNewEventResponseDto() dto.NewEventResponse {
