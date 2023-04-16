@@ -1,14 +1,21 @@
 package domain
 
 import (
-	"time"
+	"main/dto"
 )
 
 type Event struct {
-	LogType   string    `json:"log_type"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        int64
+	EventType string
+	CreatedAt string
+	Metadata  string
 }
 
 type EventRepository interface {
 	GetAllEvents() ([]Event, error)
+	CreateEvent(Event) (*Event, error)
+}
+
+func (e Event) ToNewEventResponseDto() dto.NewEventResponse {
+	return dto.NewEventResponse{ID: e.ID}
 }

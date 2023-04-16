@@ -1,7 +1,5 @@
 package domain
 
-import "time"
-
 type EventRepositoryStub struct {
 	events []Event
 }
@@ -12,8 +10,8 @@ func (er EventRepositoryStub) GetAllEvents() ([]Event, error) {
 
 func NewEventRepositoryStub() EventRepositoryStub {
 	events := []Event{
-		{LogType: "UserCreated", CreatedAt: time.Now()},
-		{LogType: "UserUpdated", CreatedAt: time.Now()},
+		{EventType: "UserCreated", CreatedAt: "2022-02-02"},
+		{EventType: "UserUpdated", CreatedAt: "2022-03-03"},
 	}
 
 	return EventRepositoryStub{events}

@@ -2,7 +2,10 @@ package domain
 
 import (
 	"database/sql"
+	"errors"
 	"log"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type EventRepositoryDb struct {
@@ -21,7 +24,7 @@ func (er EventRepositoryDb) GetAllEvents() ([]Event, error) {
 	events := make([]Event, 0)
 	for rows.Next() {
 		var e Event
-		err := rows.Scan(&e.LogType, &e.CreatedAt)
+		err := rows.Scan(&e.ID, &e.EventType, &e.CreatedAt, &e.Metadata)
 		if err != nil {
 			log.Fatal("Error while scanning events" + err.Error())
 			return nil, err
@@ -32,11 +35,24 @@ func (er EventRepositoryDb) GetAllEvents() ([]Event, error) {
 	return events, nil
 }
 
-func NewEventRepositoryDb() EventRepositoryDb {
-	client, err := sql.Open("sqlite3", "sqlite3://event-log-dump")
+func (er EventRepositoryDb) CreateEvent(e Event) (*Event, error) {
+	sqlInsert := "INSERT INTO events (event_type, created_at, metadata) values (?, ?, ?)"
+
+	result, err := er.client.Exec(sqlInsert, e.EventType, e.CreatedAt, e.Metadata)
 	if err != nil {
-		panic(err)
+		log.Fatal("Error while creating new event: " + err.Error())
+		return nil, errors.New("Unexpected error from database")
 	}
 
-	return EventRepositoryDb{client}
+	id, err := result.LastInsertId()
+	if err != nil {
+		log.Fatal("Error while creating new event: " + err.Error())
+		return nil, errors.New("Unexpected error from database")
+	}
+	e.ID = id
+	return &e, nil
+}
+
+func NewEventRepositoryDb(s *sql.DB) EventRepositoryDb {
+	return EventRepositoryDb{s}
 }
